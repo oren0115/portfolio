@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 
 import AdminNav from "@/components/admin/AdminNav";
 import LogoutButton from "@/components/admin/LogoutButton";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
 import { getSessionFromCookies } from "@/lib/auth";
 
 export default async function AdminProtectedLayout({
@@ -16,23 +20,24 @@ export default async function AdminProtectedLayout({
 
   return (
     <div className="page-wrapper">
-      <main className="mx-auto max-w-6xl px-6 py-12 space-y-6">
-        <div className="card flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.4em] text-slate-500">
-              Admin
-            </p>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Dashboard Konten
-            </h1>
-            <p className="text-sm text-slate-500">{session.email}</p>
-          </div>
-          <LogoutButton />
-        </div>
+      <main className="mx-auto max-w-6xl space-y-4 px-4 py-6 sm:space-y-6 sm:px-6 sm:py-12">
+        <Card>
+          <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500 sm:text-sm">
+                Admin
+              </p>
+              <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">
+                Dashboard Konten
+              </h1>
+              <p className="text-xs text-slate-500 sm:text-sm">{session.email}</p>
+            </div>
+            <LogoutButton />
+          </CardContent>
+        </Card>
         <AdminNav />
         <div>{children}</div>
       </main>
     </div>
   );
 }
-

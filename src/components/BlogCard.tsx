@@ -4,6 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { IBlog } from "@/models/Blog";
 import type { WithId } from "@/types/content";
 
@@ -21,7 +29,7 @@ export function BlogCard({ post }: Props) {
     : "";
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <Card className="flex flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-40 w-full overflow-hidden bg-slate-100">
         {post.coverImage ? (
           <Image
@@ -38,38 +46,35 @@ export function BlogCard({ post }: Props) {
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            {dateLabel || "Blog"}
-          </p>
-          <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
-            {post.title}
-          </h3>
-          <p className="text-sm text-slate-600 line-clamp-3">
-            {post.content.slice(0, 160)}…
-          </p>
-        </div>
+      <CardHeader className="gap-2">
+        <Badge variant="outline" className="w-max text-xs">
+          {dateLabel || "Blog"}
+        </Badge>
+        <CardTitle className="text-lg">{post.title}</CardTitle>
+        <p className="text-sm text-slate-600 line-clamp-3">
+          {post.content.slice(0, 160)}…
+        </p>
+      </CardHeader>
+      <CardContent>
         {post.tags?.length ? (
           <div className="flex flex-wrap gap-2">
             {post.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
-              >
+              <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
-              </span>
+              </Badge>
             ))}
           </div>
         ) : null}
+      </CardContent>
+      <CardFooter>
         <Link
           href={`/blog/${post.slug}`}
-          className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
         >
           Baca selengkapnya →
         </Link>
-      </div>
-    </article>
+      </CardFooter>
+    </Card>
   );
 }
 

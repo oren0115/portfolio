@@ -2,6 +2,8 @@
 
 import { ReactNode } from "react";
 
+import { Badge } from "@/components/ui/badge";
+
 type Props = {
   eyebrow?: string;
   icon?: ReactNode;
@@ -19,11 +21,11 @@ export function SectionHeading({
 }: Props) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="space-y-2">
+      <div className="space-y-3">
         {eyebrow && (
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
+          <Badge variant="outline" className="rounded-full uppercase tracking-[0.3em]">
             {eyebrow}
-          </p>
+          </Badge>
         )}
         <div className="flex items-center gap-3">
           {icon && (
@@ -32,9 +34,7 @@ export function SectionHeading({
             </span>
           )}
           <div>
-            <h2 className="text-3xl font-semibold text-slate-900">
-              {title}
-            </h2>
+            <h2 className="text-3xl font-semibold text-slate-900">{title}</h2>
             {subtitle && (
               <p className="text-base text-slate-500">{subtitle}</p>
             )}

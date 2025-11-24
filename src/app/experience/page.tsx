@@ -10,7 +10,7 @@ export default async function ExperiencePage() {
   const experiences = await getExperiences();
   return (
     <div className="page-wrapper">
-      <main className="mx-auto max-w-6xl px-6 py-16 space-y-6">
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 sm:py-16">
         <SectionHeading
           title="Experience"
           subtitle="Timeline pekerjaan dan kontribusi utama."

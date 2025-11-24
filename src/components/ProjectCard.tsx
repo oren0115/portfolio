@@ -2,8 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, FolderGit2, Github, Globe } from "lucide-react";
+import { ArrowRight, ExternalLink, Github } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import type { IProject } from "@/models/Project";
 import type { WithId } from "@/types/content";
 
@@ -20,8 +27,8 @@ export function ProjectCard({ project }: Props) {
     : "";
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
+    <Card className="group flex flex-col overflow-hidden border-neutral-200 shadow-sm transition hover:shadow-md">
+      <div className="relative h-56 w-full overflow-hidden border-b border-neutral-100 bg-gradient-to-br from-neutral-50 to-neutral-100">
         {project.image ? (
           <Image
             src={project.image}
@@ -32,72 +39,76 @@ export function ProjectCard({ project }: Props) {
             unoptimized
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-slate-400">
-            <FolderGit2 className="h-10 w-10" />
+          <div className="flex h-full items-center justify-center text-neutral-300">
+            <Github className="h-12 w-12" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition group-hover:opacity-100" />
       </div>
-      <div className="flex flex-1 flex-col gap-4 p-6">
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            {createdAt || "Project"}
-          </p>
-          <h3 className="text-xl font-semibold text-slate-900">
-            {project.title}
-          </h3>
-          <p className="text-sm text-slate-500 line-clamp-3">
-            {project.description}
-          </p>
-        </div>
+      <CardHeader className="space-y-2 pb-4">
+        <p className="text-xs font-medium tracking-wide text-neutral-500">
+          {createdAt || "Project"}
+        </p>
+        <h3 className="text-lg font-semibold text-neutral-900">
+          {project.title}
+        </h3>
+        <p className="line-clamp-2 text-sm text-neutral-600">
+          {project.description}
+        </p>
+      </CardHeader>
+      <CardContent className="flex-1 pb-4">
         {project.techStack?.length ? (
           <div className="flex flex-wrap gap-2">
             {project.techStack.slice(0, 4).map((tech) => (
-              <span
+              <Badge
                 key={tech}
-                className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+                variant="secondary"
+                className="bg-neutral-100 px-2 py-0.5 text-xs font-normal text-neutral-700"
               >
                 {tech}
-              </span>
+              </Badge>
             ))}
             {project.techStack.length > 4 && (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              <Badge
+                variant="secondary"
+                className="bg-neutral-100 px-2 py-0.5 text-xs font-normal text-neutral-700"
+              >
                 +{project.techStack.length - 4}
-              </span>
+              </Badge>
             )}
           </div>
         ) : null}
-        <div className="mt-auto flex flex-wrap gap-3 text-sm font-medium">
+      </CardContent>
+      <CardFooter className="flex items-center justify-between gap-3 border-t border-neutral-100 pt-4">
+        <div className="flex flex-wrap gap-2">
           {project.link_demo && (
             <Link
               href={project.link_demo}
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+              className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50"
             >
-              <Globe className="h-4 w-4" />
-              Live Demo
+              <ExternalLink className="h-3.5 w-3.5" />
+              Demo
             </Link>
           )}
           {project.link_repo && (
             <Link
               href={project.link_repo}
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+              className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50"
             >
-              <Github className="h-4 w-4" />
+              <Github className="h-3.5 w-3.5" />
               Source
             </Link>
           )}
-          <Link
-            href={`/projects/${project._id}`}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-white transition hover:bg-slate-800"
-          >
-            Detail
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
         </div>
-      </div>
-    </article>
+        <Link
+          href={`/projects/${project._id}`}
+          className="inline-flex items-center gap-1.5 rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-neutral-800"
+        >
+          Detail
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </CardFooter>
+    </Card>
   );
 }
-

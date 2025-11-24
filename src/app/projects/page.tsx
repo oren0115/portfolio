@@ -9,25 +9,26 @@ export const metadata = {
 export default async function ProjectsPage() {
   const projects = await getProjects();
   return (
-    <div className="page-wrapper">
-      <main className="mx-auto max-w-6xl px-6 py-16 space-y-6">
+    <div className="bg-gradient-to-b from-white to-neutral-50">
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:space-y-8 sm:px-6 sm:py-16">
         <SectionHeading
           title="Projects"
           subtitle="Semua project yang dipublikasikan."
         />
-        <div className="grid gap-6 md:grid-cols-2">
-          {projects.length ? (
-            projects.map((project) => (
+        {projects.length ? (
+          <div className="grid gap-8 md:grid-cols-2">
+            {projects.map((project) => (
               <ProjectCard key={project._id} project={project} />
-            ))
-          ) : (
-            <p className="text-slate-500">
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-neutral-200 bg-white p-12 text-center shadow-sm">
+            <p className="text-neutral-500">
               Belum ada project. Masuk sebagai admin untuk menambahkan.
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );
 }
-

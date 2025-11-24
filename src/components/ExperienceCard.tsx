@@ -2,6 +2,7 @@
 
 import { BriefcaseBusiness } from "lucide-react";
 
+import { Card } from "@/components/ui/card";
 import type { IExperience } from "@/models/Experience";
 import type { WithId } from "@/types/content";
 
@@ -11,7 +12,7 @@ type Props = {
 
 export function ExperienceCard({ experience }: Props) {
   return (
-    <article className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white px-5 py-6 shadow-sm">
+    <Card className="flex flex-col gap-3 px-5 py-6">
       <div className="flex items-center gap-4">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
           <BriefcaseBusiness className="h-5 w-5" />
@@ -37,7 +38,7 @@ export function ExperienceCard({ experience }: Props) {
           ))}
         </ul>
       ) : null}
-    </article>
+    </Card>
   );
 }
 

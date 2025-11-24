@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
 
+import { Card } from "@/components/ui/card";
 import type { ISkill } from "@/models/Skill";
 import type { WithId } from "@/types/content";
 
@@ -20,7 +21,7 @@ export function SkillPill({ skill }: Props) {
   const iconIsUrl = Boolean(skill.icon && /^https?:/i.test(skill.icon));
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+    <Card className="flex items-center gap-4 px-4 py-3">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50">
         {skill.icon ? (
           iconIsUrl ? (
@@ -47,7 +48,6 @@ export function SkillPill({ skill }: Props) {
           {levelCopy[skill.level]}
         </p>
       </div>
-    </div>
+    </Card>
   );
 }
-

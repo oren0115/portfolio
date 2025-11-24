@@ -33,9 +33,9 @@ export default function RootLayout({
       >
         <div className="flex min-h-screen flex-col">
           <header className="border-b border-slate-200 bg-white/85 shadow-sm backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-              <Link href="/" className="text-lg font-semibold text-slate-900">
-                Portfolio CMS
+            <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+              <Link href="/" className="text-base font-semibold text-slate-900 sm:text-lg">
+                Portfolio
               </Link>
               <HeaderNav />
             </div>

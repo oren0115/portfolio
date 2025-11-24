@@ -3,6 +3,25 @@
 import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 type Skill = {
   _id: string;
   name: string;
@@ -132,157 +151,142 @@ export default function SkillsManager({ initialSkills }: Props) {
 
   return (
     <div className="space-y-8">
-      <form
-        className="card space-y-6 rounded-2xl border border-slate-200 p-8 shadow-md"
-        onSubmit={handleSubmit}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-              {editingId ? "Edit Mode" : "Skill Baru"}
-            </p>
-            <h2 className="text-2xl font-semibold text-slate-900">
-              {editingId ? "Perbarui Skill" : "Tambahkan Skill"}
-            </h2>
-          </div>
-          {editingId && (
-            <button
-              type="button"
-              className="text-sm text-slate-500 underline"
-              onClick={() => {
-                setEditingId(null);
-                setForm(emptyForm);
-                setIconFile(null);
-              }}
-            >
-              Batalkan
-            </button>
-          )}
-        </div>
-        <label className="block space-y-2 text-sm font-medium text-slate-700">
-          <span>Nama Skill</span>
-          <input
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            placeholder="Contoh: Next.js, UI/UX, Product Strategy"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            required
-          />
-        </label>
-        <label className="block space-y-2 text-sm font-medium text-slate-700">
-          <span>Tingkat Kemahiran</span>
-          <select
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            value={form.level}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, level: e.target.value as Skill["level"] }))
-            }
-          >
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="expert">Expert</option>
-          </select>
-        </label>
-
-        <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-700">
-                Ikon Skill (opsional)
-              </p>
-              <p className="text-xs text-slate-500">
-                Upload ikon kustom atau gunakan emoji.
-              </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>{editingId ? "Perbarui Skill" : "Skill Baru"}</CardTitle>
+          <CardDescription>
+            Tambahkan kemampuan utama yang mencerminkan kekuatan profil Anda.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="name">Nama Skill</Label>
+              <Input
+                id="name"
+                placeholder="Contoh: Next.js, UI/UX, Product Strategy"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                required
+              />
             </div>
-            {form.icon && !iconFile && (
-              <button
-                type="button"
-                className="text-xs font-semibold text-red-500 underline"
-                onClick={() => setForm((f) => ({ ...f, icon: "" }))}
+
+            <div className="space-y-2">
+              <Label htmlFor="level">Tingkat Kemahiran</Label>
+              <Select
+                value={form.level}
+                onValueChange={(value: Skill["level"]) =>
+                  setForm((f) => ({ ...f, level: value }))
+                }
               >
-                Hapus ikon
-              </button>
-            )}
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600 transition hover:border-blue-300 hover:bg-blue-50">
-              <span>{iconFile ? "Ganti ikon" : "Upload ikon"}</span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  setIconFile(file ?? null);
-                }}
-              />
-              <span className="text-xs text-slate-400">
-                PNG / SVG dengan latar transparan
-              </span>
-            </label>
-            <label className="space-y-2 text-sm font-medium text-slate-700">
-              <span>Emoji (opsional)</span>
-              <input
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                placeholder="🚀"
-                value={form.icon}
-                onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-              />
-              <span className="text-xs text-slate-400">
-                Diisi jika ingin memakai emoji sederhana.
-              </span>
-            </label>
-          </div>
-          {iconPreviewSource && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-medium text-slate-600">Preview</p>
-              {iconPreviewSource.type === "image" ? (
-                <div className="relative mt-2 h-24 w-24 overflow-hidden rounded-lg">
-                  <Image
-                    src={iconPreviewSource.src}
-                    alt="Ikon skill"
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                    unoptimized
-                  />
+                <SelectTrigger id="level">
+                  <SelectValue placeholder="Pilih level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-700">
+                    Ikon Skill (opsional)
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Upload ikon kustom atau gunakan emoji sederhana.
+                  </p>
                 </div>
-              ) : (
-                <p className="mt-2 text-4xl">{iconPreviewSource.value}</p>
+                {form.icon && !iconFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setForm((f) => ({ ...f, icon: "" }))}
+                  >
+                    Hapus ikon
+                  </Button>
+                )}
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600 transition hover:border-blue-300 hover:bg-blue-50">
+                  <span>{iconFile ? "Ganti ikon" : "Upload ikon"}</span>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      setIconFile(file ?? null);
+                    }}
+                  />
+                  <span className="text-xs text-slate-400">
+                    PNG / SVG dengan latar transparan
+                  </span>
+                </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="emoji">Emoji (opsional)</Label>
+                  <Input
+                    id="emoji"
+                    placeholder="🚀"
+                    value={form.icon}
+                    onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                  />
+                  <p className="text-xs text-slate-400">
+                    Diisi jika ingin memakai emoji sederhana.
+                  </p>
+                </div>
+              </div>
+              {iconPreviewSource && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-medium text-slate-600">Preview</p>
+                  {iconPreviewSource.type === "image" ? (
+                    <div className="relative mt-2 h-24 w-24 overflow-hidden rounded-lg">
+                      <Image
+                        src={iconPreviewSource.src}
+                        alt="Ikon skill"
+                        fill
+                        className="object-cover"
+                        sizes="96px"
+                        unoptimized
+                      />
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-4xl">{iconPreviewSource.value}</p>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        <button
-          type="submit"
-          className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={loading || uploadingIcon}
-        >
-          {uploadingIcon
-            ? "Mengunggah ikon..."
-            : loading
-              ? "Menyimpan..."
-              : "Simpan"}
-        </button>
-        {toast && (
-          <p
-            className={`text-sm ${
-              toast.kind === "success" ? "text-emerald-600" : "text-red-600"
-            }`}
-          >
-            {toast.text}
-          </p>
-        )}
-      </form>
+            <Button
+              type="submit"
+              disabled={loading || uploadingIcon}
+              className="w-full md:w-auto"
+            >
+              {uploadingIcon
+                ? "Mengunggah ikon..."
+                : loading
+                  ? "Menyimpan..."
+                  : "Simpan"}
+            </Button>
+            {toast && (
+              <Alert variant={toast.kind === "success" ? "default" : "destructive"}>
+                <AlertDescription>{toast.text}</AlertDescription>
+              </Alert>
+            )}
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         {skills.map((skill) => (
-          <div
+          <Card
             key={skill._id}
-            className="card flex items-center justify-between rounded-2xl border border-slate-200 p-4 shadow-sm"
+            className="flex items-center justify-between px-4 py-3"
           >
-            <div className="flex items-center gap-3">
+            <CardContent className="flex items-center gap-3 p-0">
               {skill.icon ? (
                 /^https?:/i.test(skill.icon) ? (
                   <div className="relative h-12 w-12 overflow-hidden rounded-full border border-slate-200">
@@ -307,25 +311,22 @@ export default function SkillsManager({ initialSkills }: Props) {
                   {skill.level}
                 </p>
               </div>
-            </div>
-            <div className="flex gap-3 text-sm">
-              <button
-                className="text-blue-600 underline"
-                onClick={() => handleEdit(skill)}
-              >
+            </CardContent>
+            <CardContent className="flex gap-3 p-0">
+              <Button variant="ghost" size="sm" onClick={() => handleEdit(skill)}>
                 Edit
-              </button>
-              <button
-                className="text-red-500 underline"
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={() => handleDelete(skill._id)}
               >
                 Hapus
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
   );
 }
-

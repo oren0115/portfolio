@@ -35,7 +35,7 @@ export default async function ProjectDetail({
 
   return (
     <div className="page-wrapper">
-      <main className="mx-auto max-w-4xl px-6 py-16 space-y-10">
+      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-16">
         <Link
           href="/projects"
           className="inline-flex items-center text-sm text-slate-500 transition hover:text-slate-900"

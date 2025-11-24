@@ -19,7 +19,10 @@ export const blogSchema = z.object({
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/),
   content: z.string().min(20),
   tags: z.array(z.string()).default([]),
-  coverImage: z.string().url().optional().or(z.literal("")),
+  coverImage: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.string().url().optional()
+  ),
 });
 
 export const skillSchema = z.object({

@@ -2,6 +2,19 @@
 
 import { FormEvent, useState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
 type Experience = {
   _id: string;
   company: string;
@@ -25,17 +38,15 @@ type Props = {
   initialExperiences: Experience[];
 };
 
-type ToastState = {
-  kind: "success" | "error";
-  text: string;
-} | null;
-
 export default function ExperienceManager({ initialExperiences }: Props) {
   const [experiences, setExperiences] = useState<Experience[]>(initialExperiences);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<ToastState>(null);
+  const [toast, setToast] = useState<{
+    kind: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const fetchExperiences = async () => {
     const res = await fetch("/api/experience", { cache: "no-store" });
@@ -102,158 +113,150 @@ export default function ExperienceManager({ initialExperiences }: Props) {
     }
   };
 
+  const resetForm = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+  };
+
   return (
     <div className="space-y-8">
-      <form
-        className="card space-y-6 rounded-2xl border border-slate-200 p-8 shadow-md"
-        onSubmit={handleSubmit}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-              {editingId ? "Edit Mode" : "Experience Baru"}
-            </p>
-            <h2 className="text-2xl font-semibold text-slate-900">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <div className="space-y-1">
+            <CardTitle>
               {editingId ? "Perbarui Timeline" : "Tambah Pengalaman"}
-            </h2>
+            </CardTitle>
+            <CardDescription>
+              {editingId
+                ? "Ubah data pengalaman kemudian simpan untuk memperbarui."
+                : "Isi detail pengalaman profesional, lalu simpan."}
+            </CardDescription>
           </div>
           {editingId && (
-            <button
-              type="button"
-              className="text-sm text-slate-500 underline"
-              onClick={() => {
-                setEditingId(null);
-                setForm(emptyForm);
-              }}
-            >
-              Batalkan
-            </button>
+            <Button variant="ghost" size="sm" onClick={resetForm}>
+              Batalkan edit
+            </Button>
           )}
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Perusahaan</span>
-            <input
-              className="rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Nama perusahaan / organisasi"
-              value={form.company}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, company: e.target.value }))
-              }
-              required
-            />
-          </label>
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Role</span>
-            <input
-              className="rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Posisi atau tanggung jawab utama"
-              value={form.role}
-              onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-              required
-            />
-          </label>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Tanggal Mulai</span>
-            <input
-              className="rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Contoh: Jan 2023"
-              value={form.startDate}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, startDate: e.target.value }))
-              }
-              required
-            />
-          </label>
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Tanggal Selesai / Present</span>
-            <input
-              className="rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Contoh: Des 2024 atau kosongkan"
-              value={form.endDate}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, endDate: e.target.value }))
-              }
-            />
-          </label>
-        </div>
-        <label className="block space-y-2 text-sm font-medium text-slate-700">
-          <span>Deskripsi Singkat</span>
-          <textarea
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            rows={3}
-            placeholder="Ceritakan kontribusi utama dan hasil yang dicapai."
-            value={form.description}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, description: e.target.value }))
-            }
-            required
-          />
-        </label>
-        <label className="block space-y-2 text-sm font-medium text-slate-700">
-          <span>Highlights (satu per baris)</span>
-          <textarea
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            rows={3}
-            placeholder={"Contoh:\n- Memimpin tim 5 orang\n- Meningkatkan konversi 30%"}
-            value={form.highlights}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, highlights: e.target.value }))
-            }
-          />
-        </label>
-        <button
-          type="submit"
-          className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={loading}
-        >
-          {loading ? "Menyimpan..." : "Simpan"}
-        </button>
-        {toast && (
-          <p
-            className={`text-sm ${
-              toast.kind === "success" ? "text-emerald-600" : "text-red-600"
-            }`}
-          >
-            {toast.text}
-          </p>
-        )}
-      </form>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="company">Perusahaan</Label>
+                <Input
+                  id="company"
+                  placeholder="Nama perusahaan / organisasi"
+                  value={form.company}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, company: e.target.value }))
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Input
+                  id="role"
+                  placeholder="Posisi atau tanggung jawab utama"
+                  value={form.role}
+                  onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Tanggal Mulai</Label>
+                <Input
+                  id="startDate"
+                  placeholder="Contoh: Jan 2023"
+                  value={form.startDate}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, startDate: e.target.value }))
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endDate">Tanggal Selesai / Present</Label>
+                <Input
+                  id="endDate"
+                  placeholder="Contoh: Des 2024 atau kosongkan"
+                  value={form.endDate}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, endDate: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Deskripsi Singkat</Label>
+              <Textarea
+                id="description"
+                rows={3}
+                placeholder="Ceritakan kontribusi utama dan hasil yang dicapai."
+                value={form.description}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, description: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="highlights">Highlights (satu per baris)</Label>
+              <Textarea
+                id="highlights"
+                rows={3}
+                placeholder="Contoh:\n- Memimpin tim 5 orang\n- Meningkatkan konversi 30%"
+                value={form.highlights}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, highlights: e.target.value }))
+                }
+              />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full md:w-auto">
+              {loading ? "Menyimpan..." : "Simpan"}
+            </Button>
+            {toast && (
+              <Alert
+                variant={toast.kind === "success" ? "default" : "destructive"}
+              >
+                <AlertDescription>{toast.text}</AlertDescription>
+              </Alert>
+            )}
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4">
         {experiences.map((exp) => (
-          <div
+          <Card
             key={exp._id}
-            className="card flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+            className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
           >
-            <div>
+            <CardContent className="flex flex-col gap-1 p-6">
               <p className="font-semibold">
                 {exp.role} – {exp.company}
               </p>
               <p className="text-sm text-slate-500">
                 {exp.startDate} — {exp.endDate ?? "Present"}
               </p>
-            </div>
-            <div className="flex gap-3 text-sm">
-              <button
-                className="text-brand-accent underline"
-                onClick={() => handleEdit(exp)}
-              >
+            </CardContent>
+            <CardContent className="flex gap-3 pb-6 md:pb-0 md:pr-6">
+              <Button variant="ghost" size="sm" onClick={() => handleEdit(exp)}>
                 Edit
-              </button>
-              <button
-                className="text-red-500 underline"
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={() => handleDelete(exp._id)}
               >
                 Hapus
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
   );
 }
-

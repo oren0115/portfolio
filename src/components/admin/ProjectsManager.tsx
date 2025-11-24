@@ -1,16 +1,25 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
-type Project = {
-  _id: string;
-  title: string;
-  description: string;
-  techStack: string[];
-  image?: string | null;
-  link_demo?: string | null;
-  link_repo?: string | null;
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import type { IProject } from "@/models/Project";
+import type { WithId } from "@/types/content";
+
+type Props = {
+  initialProjects: WithId<IProject>[];
 };
 
 const emptyForm = {
@@ -22,23 +31,16 @@ const emptyForm = {
   link_repo: "",
 };
 
-type Props = {
-  initialProjects: Project[];
-};
-
-type ToastState = {
-  kind: "success" | "error";
-  text: string;
-} | null;
+type ToastState = { kind: "success" | "error"; text: string } | null;
 
 export default function ProjectsManager({ initialProjects }: Props) {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState(initialProjects);
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [toast, setToast] = useState<ToastState>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [toast, setToast] = useState<ToastState>(null);
 
   const fetchProjects = async () => {
     const res = await fetch("/api/projects", { cache: "no-store" });
@@ -47,7 +49,7 @@ export default function ProjectsManager({ initialProjects }: Props) {
     }
   };
 
-  const uploadImageFile = async (file: File) => {
+  const uploadImage = async (file: File) => {
     setUploadingImage(true);
     const formData = new FormData();
     formData.append("file", file);
@@ -67,6 +69,13 @@ export default function ProjectsManager({ initialProjects }: Props) {
     }
   };
 
+  const resetForm = () => {
+    setForm(emptyForm);
+    setEditingId(null);
+    setImageFile(null);
+    setToast(null);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
@@ -74,12 +83,12 @@ export default function ProjectsManager({ initialProjects }: Props) {
 
     let imageUrl = form.image.trim();
     if (imageFile) {
-      const uploadedUrl = await uploadImageFile(imageFile);
-      if (!uploadedUrl) {
+      const uploaded = await uploadImage(imageFile);
+      if (!uploaded) {
         setLoading(false);
         return;
       }
-      imageUrl = uploadedUrl;
+      imageUrl = uploaded;
     }
 
     const payload = {
@@ -102,37 +111,35 @@ export default function ProjectsManager({ initialProjects }: Props) {
 
     setLoading(false);
     if (!response.ok) {
-      let errorText = "Gagal menyimpan project.";
+      let message = "Gagal menyimpan project.";
       try {
         const data = await response.json();
         if (typeof data?.error === "string") {
-          errorText = data.error;
+          message = data.error;
         } else if (data?.error?.fieldErrors) {
-          const firstField = Object.entries(
+          const first = Object.entries(
             data.error.fieldErrors as Record<string, string[]>
           )[0];
-          if (firstField?.[1]?.length) {
-            errorText = `${firstField[0]}: ${firstField[1][0]}`;
+          if (first?.[1]?.length) {
+            message = `${first[0]}: ${first[1][0]}`;
           }
         }
       } catch {
-        // ignore parse error
+        // ignore
       }
-      setToast({ kind: "error", text: errorText });
+      setToast({ kind: "error", text: message });
       return;
     }
 
     setToast({
       kind: "success",
-      text: editingId ? "Project berhasil diperbarui." : "Project baru tersimpan!",
+      text: editingId ? "Project diperbarui." : "Project baru tersimpan.",
     });
-    setForm(emptyForm);
-    setImageFile(null);
-    setEditingId(null);
+    resetForm();
     fetchProjects();
   };
 
-  const handleEdit = (project: Project) => {
+  const handleEdit = (project: WithId<IProject>) => {
     setEditingId(project._id);
     setForm({
       title: project.title,
@@ -142,6 +149,7 @@ export default function ProjectsManager({ initialProjects }: Props) {
       link_demo: project.link_demo ?? "",
       link_repo: project.link_repo ?? "",
     });
+    setImageFile(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -153,205 +161,200 @@ export default function ProjectsManager({ initialProjects }: Props) {
     }
   };
 
+  const imagePreview = useMemo(() => {
+    if (imageFile) return URL.createObjectURL(imageFile);
+    return form.image.trim();
+  }, [imageFile, form.image]);
+
   return (
     <div className="space-y-8">
-      <form
-        className="card space-y-6 rounded-2xl border border-slate-200 p-8 shadow-md"
-        onSubmit={handleSubmit}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-              {editingId ? "Edit Mode" : "Project Baru"}
-            </p>
-            <h2 className="text-2xl font-semibold text-slate-900">
-              {editingId ? "Perbarui Project" : "Tambah Project"}
-            </h2>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <div className="space-y-1">
+            <CardTitle>{editingId ? "Perbarui Project" : "Project Baru"}</CardTitle>
+            <CardDescription>
+              {editingId
+                ? "Ubah data project kemudian simpan untuk memperbarui."
+                : "Isi detail project baru, unggah gambar opsional, lalu simpan."}
+            </CardDescription>
           </div>
           {editingId && (
-            <button
-              type="button"
-              className="text-sm text-slate-500 underline"
-              onClick={() => {
-                setEditingId(null);
-                setForm(emptyForm);
-              }}
-            >
+            <Button variant="ghost" size="sm" onClick={resetForm}>
               Batalkan edit
-            </button>
+            </Button>
           )}
-        </div>
-        <div className="space-y-4">
-          <label className="block space-y-2 text-sm font-medium text-slate-700">
-            <span>Nama Project</span>
-            <input
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Masukkan nama project"
-              value={form.title}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, title: e.target.value }))
-              }
-              minLength={3}
-              required
-            />
-          </label>
-          <label className="block space-y-2 text-sm font-medium text-slate-700">
-            <span>Deskripsi</span>
-            <textarea
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Ceritakan highlight project (minimal 10 karakter)"
-              rows={4}
-              value={form.description}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, description: e.target.value }))
-              }
-              minLength={10}
-              required
-            />
-          </label>
-          <label className="block space-y-2 text-sm font-medium text-slate-700">
-            <span>Tech Stack (pisahkan dengan koma)</span>
-            <input
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Typescript, React, Tailwind..."
-              value={form.techStack}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, techStack: e.target.value }))
-              }
-            />
-          </label>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Demo URL</span>
-            <input
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="https://demo-anda.com"
-              value={form.link_demo}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, link_demo: e.target.value }))
-              }
-            />
-          </label>
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Repository URL</span>
-            <input
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="https://github.com/username/project"
-              value={form.link_repo}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, link_repo: e.target.value }))
-              }
-            />
-          </label>
-        </div>
-
-        <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-700">
-                Gambar Project
-              </p>
-              <p className="text-xs text-slate-500">
-                Upload file untuk menampilkan preview project.
-              </p>
-            </div>
-            {form.image && !imageFile && (
-              <button
-                type="button"
-                className="text-xs font-semibold text-red-500 underline"
-                onClick={() => setForm((f) => ({ ...f, image: "" }))}
-              >
-                Hapus gambar
-              </button>
-            )}
-          </div>
-          <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600 transition hover:border-blue-300 hover:bg-blue-50">
-            <span>{imageFile ? "Ganti gambar" : "Pilih gambar"}</span>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                setImageFile(file ?? null);
-              }}
-            />
-            <span className="text-xs text-slate-400">
-              Format JPG, PNG, atau WEBP
-            </span>
-          </label>
-          {(imageFile || form.image) && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-medium text-slate-600">Preview</p>
-              <div className="relative mt-2 h-48 w-full overflow-hidden rounded-lg">
-                <Image
-                  src={
-                    imageFile
-                      ? URL.createObjectURL(imageFile)
-                      : (form.image ?? "")
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Nama Project</Label>
+                <Input
+                  id="title"
+                  placeholder="Masukkan nama project"
+                  value={form.title}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  alt="Preview project"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  unoptimized
+                  minLength={3}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Deskripsi</Label>
+                <Textarea
+                  id="description"
+                  rows={4}
+                  placeholder="Ceritakan highlight project"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                  minLength={10}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tech">Tech Stack (pisahkan dengan koma)</Label>
+                <Input
+                  id="tech"
+                  placeholder="Typescript, React, Tailwind..."
+                  value={form.techStack}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, techStack: e.target.value }))
+                  }
                 />
               </div>
             </div>
-          )}
-        </div>
 
-        <button
-          type="submit"
-          className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={loading || uploadingImage}
-        >
-          {uploadingImage
-            ? "Mengunggah gambar..."
-            : loading
-              ? "Menyimpan..."
-              : "Simpan"}
-        </button>
-        {toast && (
-          <p
-            className={`text-sm ${
-              toast.kind === "success" ? "text-emerald-600" : "text-red-600"
-            }`}
-          >
-            {toast.text}
-          </p>
-        )}
-      </form>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="demo">Demo URL</Label>
+                <Input
+                  id="demo"
+                  placeholder="https://demo-anda.com"
+                  value={form.link_demo}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, link_demo: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="repo">Repository URL</Label>
+                <Input
+                  id="repo"
+                  placeholder="https://github.com/username/project"
+                  value={form.link_repo}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, link_repo: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-700">
+                    Gambar Project
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Upload file atau gunakan URL yang tersedia.
+                  </p>
+                </div>
+                {form.image && !imageFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setForm((prev) => ({
+                        ...prev,
+                        image: "",
+                      }))
+                    }
+                  >
+                    Hapus gambar
+                  </Button>
+                )}
+              </div>
+              <Label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600 transition hover:border-blue-300 hover:bg-blue-50">
+                <span>{imageFile ? "Ganti gambar" : "Upload gambar"}</span>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    setImageFile(file ?? null);
+                  }}
+                />
+                <span className="text-xs text-slate-400">
+                  Format JPG, PNG, atau WEBP
+                </span>
+              </Label>
+              {imagePreview && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-medium text-slate-600">Preview</p>
+                  <div className="relative mt-2 h-48 w-full overflow-hidden rounded-lg">
+                    <Image
+                      src={imagePreview}
+                      alt="Preview project"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      unoptimized
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full md:w-auto"
+              disabled={loading || uploadingImage}
+            >
+              {uploadingImage
+                ? "Mengunggah gambar..."
+                : loading
+                  ? "Menyimpan..."
+                  : "Simpan"}
+            </Button>
+
+            {toast && (
+              <Alert variant={toast.kind === "success" ? "default" : "destructive"}>
+                <AlertDescription>{toast.text}</AlertDescription>
+              </Alert>
+            )}
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4">
         {projects.map((project) => (
-          <div
+          <Card
             key={project._id}
-            className="card flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+            className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
           >
-            <div>
-              <p className="font-semibold">{project.title}</p>
-              <p className="text-sm text-slate-500">
+            <CardContent className="flex flex-col gap-1 p-4 sm:p-6">
+              <p className="font-semibold text-sm sm:text-base">{project.title}</p>
+              <p className="text-xs text-slate-500 sm:text-sm">
                 {(project.techStack ?? []).join(", ")}
               </p>
-            </div>
-            <div className="flex gap-3 text-sm">
-              <button
-                className="text-blue-600 cursor-pointer hover:text-blue-700 underline"
-                onClick={() => handleEdit(project)}
-              >
+            </CardContent>
+            <CardContent className="flex gap-2 p-4 pb-4 sm:gap-3 sm:pb-6 md:pb-0 md:pr-6">
+              <Button variant="ghost" size="sm" onClick={() => handleEdit(project)}>
                 Edit
-              </button>
-              <button
-                className="text-red-600 cursor-pointer hover:text-red-700 underline"
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={() => handleDelete(project._id)}
               >
                 Hapus
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

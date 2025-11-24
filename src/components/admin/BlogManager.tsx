@@ -1,7 +1,39 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import {
+  Bold,
+  Heading1,
+  Heading2,
+  Heading3,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  List,
+  ListOrdered,
+  Type,
+} from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 type Blog = {
   _id: string;
@@ -32,6 +64,8 @@ export default function BlogManager({ initialBlogs }: Props) {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [toast, setToast] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [contentView, setContentView] = useState<"edit" | "preview">("edit");
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const fetchBlogs = async () => {
     const res = await fetch("/api/blog", { cache: "no-store" });
@@ -74,14 +108,19 @@ export default function BlogManager({ initialBlogs }: Props) {
       coverImage = uploaded;
     }
 
-    const payload = {
-      ...form,
-      coverImage,
+    const payload: Record<string, unknown> = {
+      title: form.title,
+      slug: form.slug,
+      content: form.content,
       tags: form.tags
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean),
     };
+    
+    if (coverImage) {
+      payload.coverImage = coverImage;
+    }
 
     const response = await fetch(
       editingSlug ? `/api/blog/${editingSlug}` : "/api/blog",
@@ -94,7 +133,23 @@ export default function BlogManager({ initialBlogs }: Props) {
 
     setLoading(false);
     if (!response.ok) {
-      setToast({ kind: "error", text: "Gagal menyimpan blog." });
+      let errorText = "Gagal menyimpan blog.";
+      try {
+        const data = await response.json();
+        if (typeof data?.error === "string") {
+          errorText = data.error;
+        } else if (data?.error?.fieldErrors) {
+          const firstField = Object.entries(
+            data.error.fieldErrors as Record<string, string[]>
+          )[0];
+          if (firstField?.[1]?.length) {
+            errorText = `${firstField[0]}: ${firstField[1][0]}`;
+          }
+        }
+      } catch {
+        // ignore parse error
+      }
+      setToast({ kind: "error", text: errorText });
       return;
     }
 
@@ -128,184 +183,345 @@ export default function BlogManager({ initialBlogs }: Props) {
     }
   };
 
+  const insertTextAtCursor = (before: string, after: string = "") => {
+    const textarea = contentTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = form.content.substring(start, end);
+    const newText =
+      form.content.substring(0, start) +
+      before +
+      selectedText +
+      after +
+      form.content.substring(end);
+    
+    setForm((f) => ({ ...f, content: newText }));
+    
+    // Set cursor position after inserted text
+    setTimeout(() => {
+      textarea.focus();
+      const newPosition = start + before.length + selectedText.length + after.length;
+      textarea.setSelectionRange(newPosition, newPosition);
+    }, 0);
+  };
+
+  const insertLine = (text: string) => {
+    const textarea = contentTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const lineStart = form.content.substring(0, start).lastIndexOf("\n") + 1;
+    const lineEnd = form.content.indexOf("\n", start);
+    const lineEndPos = lineEnd === -1 ? form.content.length : lineEnd;
+    const currentLineText = form.content.substring(lineStart, lineEndPos);
+    
+    const newText =
+      form.content.substring(0, lineStart) +
+      text +
+      currentLineText +
+      form.content.substring(lineEndPos);
+    
+    setForm((f) => ({ ...f, content: newText }));
+    
+    setTimeout(() => {
+      textarea.focus();
+      const newPosition = lineStart + text.length + currentLineText.length;
+      textarea.setSelectionRange(newPosition, newPosition);
+    }, 0);
+  };
+
   return (
     <div className="space-y-8">
-      <form
-        className="card space-y-6 rounded-2xl border border-slate-200 p-8 shadow-md"
-        onSubmit={handleSubmit}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-              {editingSlug ? "Edit Mode" : "Blog Baru"}
-            </p>
-            <h2 className="text-2xl font-semibold text-slate-900">
-              {editingSlug ? "Perbarui Artikel" : "Tulis Artikel"}
-            </h2>
-          </div>
-          {editingSlug && (
-            <button
-              type="button"
-              className="text-sm text-slate-500 underline"
-              onClick={() => {
-                setEditingSlug(null);
-                setForm(emptyForm);
-              }}
-            >
-              Batalkan edit
-            </button>
-          )}
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Judul</span>
-            <input
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="Masukkan judul artikel"
-              value={form.title}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, title: e.target.value }))
-              }
-              required
-            />
-          </label>
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span>Slug</span>
-            <input
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              placeholder="slug-artikel"
-              value={form.slug}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, slug: e.target.value }))
-              }
-              required
-            />
-          </label>
-        </div>
-        <label className="block space-y-2 text-sm font-medium text-slate-700">
-          <span>Konten</span>
-          <textarea
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            rows={6}
-            placeholder="Konten markdown / rich text"
-            value={form.content}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, content: e.target.value }))
-            }
-            required
-          />
-        </label>
-        <label className="block space-y-2 text-sm font-medium text-slate-700">
-          <span>Tags (pisahkan dengan koma)</span>
-          <input
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            placeholder="Next.js, MongoDB, UI/UX"
-            value={form.tags}
-            onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-          />
-        </label>
-        <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-700">
-                Cover Artikel
-              </p>
-              <p className="text-xs text-slate-500">
-                Unggah gambar untuk halaman detail artikel.
-              </p>
-            </div>
-            {form.coverImage && !coverFile && (
-              <button
-                type="button"
-                className="text-xs font-semibold text-red-500 underline"
-                onClick={() => setForm((f) => ({ ...f, coverImage: "" }))}
-              >
-                Hapus cover
-              </button>
-            )}
-          </div>
-          <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600 transition hover:border-blue-300 hover:bg-blue-50">
-            <span>{coverFile ? "Ganti cover" : "Upload cover"}</span>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                setCoverFile(file ?? null);
-              }}
-            />
-            <span className="text-xs text-slate-400">
-              Resolusi disarankan 1200×600
-            </span>
-          </label>
-          {(coverFile || form.coverImage) && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-medium text-slate-600">Preview</p>
-              <div className="relative mt-2 h-48 w-full overflow-hidden rounded-lg">
-                <Image
-                  src={
-                    coverFile
-                      ? URL.createObjectURL(coverFile)
-                      : (form.coverImage ?? "")
+      <Card>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">{editingSlug ? "Perbarui Artikel" : "Blog Baru"}</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
+            Bagikan insight baru atau dokumentasikan proses yang sedang Anda kerjakan.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="title">Judul</Label>
+                <Input
+                  id="title"
+                  placeholder="Masukkan judul artikel"
+                  value={form.title}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, title: e.target.value }))
                   }
-                  alt="Preview cover"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  unoptimized
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug</Label>
+                <Input
+                  id="slug"
+                  placeholder="slug-artikel"
+                  value={form.slug}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, slug: e.target.value }))
+                  }
+                  required
                 />
               </div>
             </div>
-          )}
-        </div>
-        <button
-          type="submit"
-          className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={loading || uploadingCover}
-        >
-          {uploadingCover
-            ? "Mengunggah cover..."
-            : loading
-              ? "Menyimpan..."
-              : "Simpan"}
-        </button>
-        {toast && (
-          <p
-            className={`text-sm ${
-              toast.kind === "success" ? "text-emerald-600" : "text-red-600"
-            }`}
-          >
-            {toast.text}
-          </p>
-        )}
-      </form>
+
+            <div className="space-y-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <Label htmlFor="content">Konten</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={contentView === "edit" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setContentView("edit")}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={contentView === "preview" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setContentView("preview")}
+                  >
+                    Preview
+                  </Button>
+                </div>
+              </div>
+              {contentView === "edit" ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1 overflow-x-auto rounded-t-lg border border-b-0 border-slate-200 bg-slate-50 p-2 scrollbar-hide">
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "h1") insertLine("# ");
+                        else if (value === "h2") insertLine("## ");
+                        else if (value === "h3") insertLine("### ");
+                        else if (value === "p") insertLine("");
+                      }}
+                    >
+                      <SelectTrigger className="h-8 w-[100px] gap-1 sm:w-[120px]">
+                        <Type className="h-4 w-4" />
+                        <SelectValue placeholder="Paragraph" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="h1">
+                          <div className="flex items-center gap-2">
+                            <Heading1 className="h-4 w-4" />
+                            Heading 1
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="h2">
+                          <div className="flex items-center gap-2">
+                            <Heading2 className="h-4 w-4" />
+                            Heading 2
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="h3">
+                          <div className="flex items-center gap-2">
+                            <Heading3 className="h-4 w-4" />
+                            Heading 3
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="p">Paragraph</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="h-4 w-px bg-slate-300" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => insertTextAtCursor("**", "**")}
+                      title="Bold"
+                    >
+                      <Bold className="h-4 w-4" />
+                    </Button>
+                    <div className="h-4 w-px bg-slate-300" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => insertLine("- ")}
+                      title="Bullet List"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => insertLine("1. ")}
+                      title="Numbered List"
+                    >
+                      <ListOrdered className="h-4 w-4" />
+                    </Button>
+                    <div className="h-4 w-px bg-slate-300" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => insertTextAtCursor("[", "]()")}
+                      title="Link"
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => insertTextAtCursor("![", "]()")}
+                      title="Image"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Textarea
+                    ref={contentTextareaRef}
+                    id="content"
+                    rows={12}
+                    placeholder="Konten markdown / rich text&#10;&#10;Contoh:&#10;# Judul&#10;&#10;Paragraf dengan **teks tebal** dan *teks miring*.&#10;&#10;- List item 1&#10;- List item 2"
+                    value={form.content}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, content: e.target.value }))
+                    }
+                    className="font-mono text-sm rounded-t-none"
+                    required
+                  />
+                </div>
+              ) : (
+                <div className="min-h-[300px] rounded-lg border border-slate-200 bg-white p-6">
+                  {form.content ? (
+                    <div className="markdown-preview">
+                      <ReactMarkdown>{form.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400">
+                      Tulis konten di tab Edit untuk melihat preview di sini.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags (pisahkan dengan koma)</Label>
+              <Input
+                id="tags"
+                placeholder="Next.js, MongoDB, UI/UX"
+                value={form.tags}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, tags: e.target.value }))
+                }
+              />
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-700">
+                    Cover Artikel
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Unggah gambar untuk halaman detail artikel.
+                  </p>
+                </div>
+                {form.coverImage && !coverFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setForm((f) => ({ ...f, coverImage: "" }))}
+                  >
+                    Hapus cover
+                  </Button>
+                )}
+              </div>
+              <Label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600 transition hover:border-blue-300 hover:bg-blue-50">
+                <span>{coverFile ? "Ganti cover" : "Upload cover"}</span>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    setCoverFile(file ?? null);
+                  }}
+                />
+                <span className="text-xs text-slate-400">
+                  Disarankan 1200×600px
+                </span>
+              </Label>
+              {(coverFile || form.coverImage) && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-medium text-slate-600">Preview</p>
+                  <div className="relative mt-2 h-48 w-full overflow-hidden rounded-lg">
+                    <Image
+                      src={
+                        coverFile
+                          ? URL.createObjectURL(coverFile)
+                          : (form.coverImage ?? "")
+                      }
+                      alt="Preview cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      unoptimized
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading || uploadingCover}
+              className="w-full md:w-auto"
+            >
+              {uploadingCover
+                ? "Mengunggah cover..."
+                : loading
+                  ? "Menyimpan..."
+                  : "Simpan"}
+            </Button>
+            {toast && (
+              <Alert variant={toast.kind === "success" ? "default" : "destructive"}>
+                <AlertDescription>{toast.text}</AlertDescription>
+              </Alert>
+            )}
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4">
         {blogs.map((blog) => (
-          <div
+          <Card
             key={blog._id}
-            className="card flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+            className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
           >
-            <div>
-              <p className="font-semibold">{blog.title}</p>
-              <p className="text-sm text-slate-500">{blog.slug}</p>
-            </div>
-            <div className="flex gap-3 text-sm">
-              <button
-                className="text-brand-accent underline"
-                onClick={() => handleEdit(blog)}
-              >
+            <CardContent className="p-4 sm:p-6">
+              <p className="font-semibold text-sm sm:text-base">{blog.title}</p>
+              <p className="text-xs text-slate-500 sm:text-sm">{blog.slug}</p>
+            </CardContent>
+            <CardContent className="flex gap-2 p-4 pb-4 sm:gap-3 sm:pb-6 md:pb-0 md:pr-6">
+              <Button variant="ghost" size="sm" onClick={() => handleEdit(blog)}>
                 Edit
-              </button>
-              <button
-                className="text-red-500 underline"
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={() => handleDelete(blog.slug)}
               >
                 Hapus
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

@@ -2,6 +2,18 @@
 
 import { FormEvent, useState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,48 +39,50 @@ export default function AdminLoginPage() {
 
   return (
     <div className="page-wrapper">
-      <main className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-6 py-16">
-        <div className="card space-y-6">
-          <div>
-            <p className="text-sm uppercase tracking-[0.4em] text-slate-500">
+      <main className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-4 py-8 sm:px-6 sm:py-16">
+        <Card>
+          <CardHeader>
+            <CardDescription className="text-sm uppercase tracking-[0.4em]">
               Admin
-            </p>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Masuk ke dashboard
-            </h1>
-          </div>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <input
-              type="email"
-              className="w-full rounded-md border border-slate-200 p-3"
-              placeholder="Email admin"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              className="w-full rounded-md border border-slate-200 p-3"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              type="submit"
-              className="w-full rounded-md bg-brand-accent px-4 py-3 text-white font-semibold"
-              disabled={loading}
-            >
-              {loading ? "Memproses..." : "Masuk"}
-            </button>
-          </form>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <p className="text-xs text-slate-500">
-            Gunakan kredensial ADMIN_EMAIL & ADMIN_PASSWORD dari file env.
-          </p>
-        </div>
+            </CardDescription>
+            <CardTitle className="text-2xl">Masuk ke dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email admin</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Email admin"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Memproses..." : "Masuk"}
+              </Button>
+            </form>
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
 }
-
