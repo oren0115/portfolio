@@ -1,36 +1,162 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Next.js Portfolio CMS
 
-## Getting Started
+Full-stack portfolio platform (public site + admin dashboard) built with **Next.js 14 App Router**, **MongoDB (Mongoose)**, **Tailwind CSS**, and **JWT-based admin auth**. Supports CRUD for Projects, Blog Posts, Skills, and Experience with dedicated public pages and protected admin tools.
 
-First, run the development server:
+### ✨ Highlights
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- App Router architecture with server components for public pages and client-side admin tooling.
+- MongoDB models for `users`, `projects`, `blog`, `skills`, `experience`.
+- Secure admin authentication using signed HTTP-only cookies (JWT).
+- Ready-to-use API routes mirroring the proposed contract.
+- Tailwind-based UI kit for hero, cards, and admin forms.
+
+---
+
+## 1. Getting Started
+
+### Prerequisites
+
+- Node.js ≥ 18.18
+- MongoDB database (Atlas or self-hosted)
+
+### Environment Variables
+
+Create a `.env.local` file with:
+
+```
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/portfolio
+AUTH_SECRET=<random-long-string>
+ADMIN_EMAIL=you@example.com
+ADMIN_PASSWORD=super-secure-password
+CLOUDINARY_CLOUD_NAME=<cloud-name>
+CLOUDINARY_API_KEY=<api-key>
+CLOUDINARY_API_SECRET=<api-secret>
+# Optional, defaults to "portfolio"
+CLOUDINARY_FOLDER=portfolio-media
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> On first login, the system will auto-seed an admin user using `ADMIN_EMAIL` & `ADMIN_PASSWORD`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Install & Run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+# open http://localhost:3000
+```
 
-## Learn More
+Additional scripts:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint   # lint with next lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 2. Architecture Overview
 
-## Deploy on Vercel
+```
+src/
+├─ app/
+│  ├─ (public) pages: /, /projects, /projects/[id], /blog, /blog/[slug], /skills, /experience
+│  ├─ admin/
+│  │   ├─ (public)/login → admin login form
+│  │   └─ (protected)/… → dashboard + CRUD screens
+│  └─ api/… → RESTful CRUD endpoints (projects, blog, skills, experience, auth)
+├─ components/ → public cards, admin managers, shared UI
+├─ lib/ → db connector, auth helpers, validation, data loaders
+└─ models/ → Mongoose schemas for User/Project/Blog/Skill/Experience
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Public UI** uses server components fetching directly from MongoDB via `lib/data`.
+- **Admin UI** renders through a protected layout that checks the session cookie, then hydrates client-side CRUD managers that talk to the API routes.
+- **Auth Flow**: `/api/auth/login` validates credentials → issues JWT → sets `portfolio_session` HTTP-only cookie. `/api/auth/logout` clears the cookie. All CRUD API routes enforce this cookie.
+- **Data Validation** handled by `zod` schemas per entity before hitting MongoDB.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 3. API Contract (excerpt)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST   | `/api/auth/login` | Login admin (body: `{ email, password }`) |
+| POST   | `/api/auth/logout` | Clear session |
+| GET    | `/api/projects` | Public list |
+| POST   | `/api/projects` | **Admin** create project |
+| GET/PATCH/DELETE | `/api/projects/[id]` | View/update/delete project |
+| GET/POST | `/api/blog` | List or create blog post |
+| GET/PATCH/DELETE | `/api/blog/[slug]` | Blog detail & mutations |
+| POST | `/api/uploads` | **Admin** image upload → Cloudinary |
+| GET/POST | `/api/skills` | List or create skills |
+| PATCH/DELETE | `/api/skills/[id]` | Update/delete skill |
+| GET/POST | `/api/experience` | List or create experience |
+| PATCH/DELETE | `/api/experience/[id]` | Update/delete experience |
+
+All non-GET operations require a valid admin session cookie.
+
+---
+
+## 4. Content Flow
+
+### Public Visitor
+1. User loads landing page → server components fetch MongoDB data for hero, projects, blog, skills, experience.
+2. Detail views are served via dynamic routes (`/projects/[id]`, `/blog/[slug]`).
+
+### Admin CRUD
+1. Admin visits `/admin/login`, authenticates via `/api/auth/login`.
+2. Protected layout verifies the session and exposes navigation + logout.
+3. Each CRUD screen has:
+   - Form for Create/Update (auto-switches to edit mode per item).
+   - Live table/list with Edit/Delete actions (hits API routes).
+4. Updates reflect instantly on public pages (server components re-fetch on request).
+
+---
+
+## 5. Data Model Snapshot
+
+```ts
+Project {
+  title: string;
+  description: string;
+  techStack: string[];
+  image?: string;
+  link_demo?: string;
+  link_repo?: string;
+  createdAt: Date;
+}
+
+BlogPost {
+  title: string;
+  slug: string;
+  content: string (markdown);
+  tags: string[];
+  coverImage?: string;
+  createdAt: Date;
+}
+
+Skill {
+  name: string;
+  level: "beginner" | "intermediate" | "expert";
+  icon?: string;
+}
+
+Experience {
+  company: string;
+  role: string;
+  startDate: string;
+  endDate?: string;
+  description: string;
+  highlights: string[];
+}
+```
+
+---
+
+## 6. Next Steps
+
+- Swap JWT auth with NextAuth or enterprise SSO if needed.
+- Extend uploads to support additional media types (video, documents, etc.).
+- Implement role management if inviting multiple editors.
+- Add e2e tests (Playwright) for admin flows.
+
+Enjoy building and customizing! 🎨🚀
