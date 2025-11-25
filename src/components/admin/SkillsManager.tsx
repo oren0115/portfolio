@@ -26,12 +26,14 @@ type Skill = {
   _id: string;
   name: string;
   level: "beginner" | "intermediate" | "expert";
+  category: "frontend" | "backend" | "jaringan" | "database";
   icon?: string | null;
 };
 
 const emptyForm = {
   name: "",
   level: "beginner" as Skill["level"],
+  category: "frontend" as Skill["category"],
   icon: "",
 };
 
@@ -93,6 +95,7 @@ export default function SkillsManager({ initialSkills }: Props) {
     const payload = {
       name: form.name,
       level: form.level,
+      category: form.category,
       icon: iconValue,
     };
 
@@ -124,6 +127,7 @@ export default function SkillsManager({ initialSkills }: Props) {
     setForm({
       name: skill.name,
       level: skill.level,
+      category: skill.category,
       icon: skill.icon ?? "",
     });
     setIconFile(null);
@@ -171,23 +175,45 @@ export default function SkillsManager({ initialSkills }: Props) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="level">Tingkat Kemahiran</Label>
-              <Select
-                value={form.level}
-                onValueChange={(value: Skill["level"]) =>
-                  setForm((f) => ({ ...f, level: value }))
-                }
-              >
-                <SelectTrigger id="level">
-                  <SelectValue placeholder="Pilih level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="category">Kategori</Label>
+                <Select
+                  value={form.category}
+                  onValueChange={(value: Skill["category"]) =>
+                    setForm((f) => ({ ...f, category: value }))
+                  }
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Pilih kategori" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="frontend">Frontend</SelectItem>
+                    <SelectItem value="backend">Backend</SelectItem>
+                    <SelectItem value="jaringan">Jaringan</SelectItem>
+                    <SelectItem value="database">Database</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="level">Tingkat Kemahiran</Label>
+                <Select
+                  value={form.level}
+                  onValueChange={(value: Skill["level"]) =>
+                    setForm((f) => ({ ...f, level: value }))
+                  }
+                >
+                  <SelectTrigger id="level">
+                    <SelectValue placeholder="Pilih level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-3 rounded-2xl border border-dashed border-slate-300 p-4">
@@ -307,9 +333,18 @@ export default function SkillsManager({ initialSkills }: Props) {
               )}
               <div>
                 <p className="font-semibold">{skill.name}</p>
-                <p className="text-xs uppercase text-slate-500">
-                  {skill.level}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-medium text-blue-600">
+                    {skill.category === "frontend" && "Frontend"}
+                    {skill.category === "backend" && "Backend"}
+                    {skill.category === "jaringan" && "Jaringan"}
+                    {skill.category === "database" && "Database"}
+                  </p>
+                  <span className="text-slate-300">•</span>
+                  <p className="text-xs uppercase text-slate-500">
+                    {skill.level}
+                  </p>
+                </div>
               </div>
             </CardContent>
             <CardContent className="flex gap-3 p-0">

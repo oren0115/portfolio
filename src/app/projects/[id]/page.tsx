@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { getProjectById } from "@/lib/data";
+import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +35,9 @@ export default async function ProjectDetail({
     : null;
 
   return (
-    <div className="page-wrapper">
-      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-16">
+    <div className="page-wrapper relative overflow-hidden">
+      <BackgroundDecorations />
+      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-16 relative z-10">
         <Link
           href="/projects"
           className="inline-flex items-center text-sm text-slate-500 transition hover:text-slate-900"

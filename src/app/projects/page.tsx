@@ -1,5 +1,6 @@
 import { ProjectCard } from "@/components/ProjectCard";
 import { SectionHeading } from "@/components/SectionHeading";
+import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { getProjects } from "@/lib/data";
 
 export const metadata = {
@@ -9,8 +10,9 @@ export const metadata = {
 export default async function ProjectsPage() {
   const projects = await getProjects();
   return (
-    <div className="bg-gradient-to-b from-white to-neutral-50">
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:space-y-8 sm:px-6 sm:py-16">
+    <div className="page-wrapper relative overflow-hidden">
+      <BackgroundDecorations />
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:space-y-8 sm:px-6 sm:py-16 relative z-10">
         <SectionHeading
           title="Projects"
           subtitle="Semua project yang dipublikasikan."

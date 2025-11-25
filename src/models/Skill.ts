@@ -8,6 +8,12 @@ const SkillSchema = new Schema(
       enum: ["beginner", "intermediate", "expert"],
       required: true,
     },
+    category: {
+      type: String,
+      enum: ["frontend", "backend", "jaringan", "database"],
+      default: "frontend",
+      required: true,
+    },
     icon: String,
   },
   { timestamps: true }

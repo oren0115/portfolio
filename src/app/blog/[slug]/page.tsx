@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 import { getBlogBySlug } from "@/lib/data";
+import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,9 @@ export default async function BlogDetail({
     }
 
     return (
-      <div className="page-wrapper">
-        <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 sm:py-16">
+      <div className="page-wrapper relative overflow-hidden">
+        <BackgroundDecorations />
+        <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 sm:py-16 relative z-10">
           <Link href="/blog" className="text-sm text-slate-500 underline">
             ← Semua blog
           </Link>

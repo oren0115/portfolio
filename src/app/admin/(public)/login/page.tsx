@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -38,8 +39,9 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="page-wrapper">
-      <main className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-4 py-8 sm:px-6 sm:py-16">
+    <div className="page-wrapper relative overflow-hidden">
+      <BackgroundDecorations />
+      <main className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-4 py-8 sm:px-6 sm:py-16 relative z-10">
         <Card>
           <CardHeader>
             <CardDescription className="text-sm uppercase tracking-[0.4em]">

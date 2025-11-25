@@ -28,6 +28,7 @@ export const blogSchema = z.object({
 export const skillSchema = z.object({
   name: z.string().min(2),
   level: z.enum(["beginner", "intermediate", "expert"]),
+  category: z.enum(["frontend", "backend", "jaringan", "database"]),
   icon: z.string().optional().or(z.literal("")),
 });
 

@@ -7,11 +7,21 @@ import { connectDB } from "@/lib/db";
 import UserModel, { IUser } from "@/models/User";
 
 export const SESSION_COOKIE = "portfolio_session";
-const JWT_SECRET = process.env.AUTH_SECRET;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
-if (!JWT_SECRET) {
-  throw new Error("Missing AUTH_SECRET. Please define it in your env.");
+function getJwtSecret(): string {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    const envKeys = Object.keys(process.env).filter((key) =>
+      key.includes("AUTH") || key.includes("SECRET")
+    );
+    throw new Error(
+      `Missing AUTH_SECRET. Please define it in your .env.local file.\n` +
+        `Found auth-related env vars: ${envKeys.length > 0 ? envKeys.join(", ") : "none"}\n` +
+        `Make sure you have a .env.local file in the root directory with AUTH_SECRET=your_secret_string`
+    );
+  }
+  return secret;
 }
 
 export interface SessionPayload {
@@ -26,12 +36,14 @@ export interface LoginResult {
 }
 
 export function signSession(payload: SessionPayload) {
-  return jwt.sign(payload, JWT_SECRET!, { expiresIn: SESSION_TTL_SECONDS });
+  const secret = getJwtSecret();
+  return jwt.sign(payload, secret, { expiresIn: SESSION_TTL_SECONDS });
 }
 
 export function verifySession(token: string): SessionPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET!) as SessionPayload;
+    const secret = getJwtSecret();
+    return jwt.verify(token, secret) as SessionPayload;
   } catch {
     return null;
   }

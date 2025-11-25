@@ -7,12 +7,19 @@ declare global {
   } | undefined;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error(
-    "Missing MONGODB_URI. Please define it in your environment variables."
-  );
+function getMongoUri(): string {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    const envKeys = Object.keys(process.env).filter((key) =>
+      key.includes("MONGO")
+    );
+    throw new Error(
+      `Missing MONGODB_URI. Please define it in your .env.local file.\n` +
+        `Found MongoDB-related env vars: ${envKeys.length > 0 ? envKeys.join(", ") : "none"}\n` +
+        `Make sure you have a .env.local file in the root directory with MONGODB_URI=your_connection_string`
+    );
+  }
+  return uri;
 }
 
 let cached = globalThis.mongooseConnection;
@@ -28,8 +35,9 @@ export async function connectDB() {
   }
 
   if (!cached?.promise) {
+    const MONGODB_URI = getMongoUri();
     cached!.promise = mongoose
-      .connect(MONGODB_URI as string, {
+      .connect(MONGODB_URI, {
         bufferCommands: false,
       })
       .then((mongooseInstance) => mongooseInstance);
