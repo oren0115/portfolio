@@ -184,14 +184,14 @@ export default function SkillsManager({ initialSkills }: Props) {
                     setForm((f) => ({ ...f, category: value }))
                   }
                 >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Pilih kategori" />
+                  <SelectTrigger id="category" className="cursor-pointer">
+                    <SelectValue className="cursor-pointer" placeholder="Pilih kategori" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="frontend">Frontend</SelectItem>
-                    <SelectItem value="backend">Backend</SelectItem>
-                    <SelectItem value="jaringan">Jaringan</SelectItem>
-                    <SelectItem value="database">Database</SelectItem>
+                    <SelectItem className="cursor-pointer" value="frontend">Frontend</SelectItem>
+                    <SelectItem className="cursor-pointer" value="backend">Backend</SelectItem>
+                    <SelectItem className="cursor-pointer" value="jaringan">Jaringan</SelectItem>
+                    <SelectItem className="cursor-pointer" value="database">Database</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -204,13 +204,13 @@ export default function SkillsManager({ initialSkills }: Props) {
                     setForm((f) => ({ ...f, level: value }))
                   }
                 >
-                  <SelectTrigger id="level">
-                    <SelectValue placeholder="Pilih level" />
+                  <SelectTrigger id="level" className="cursor-pointer">
+                    <SelectValue className="cursor-pointer" placeholder="Pilih level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="expert">Expert</SelectItem>
+                    <SelectItem className="cursor-pointer" value="beginner">Beginner</SelectItem>
+                    <SelectItem className="cursor-pointer" value="intermediate">Intermediate</SelectItem>
+                    <SelectItem className="cursor-pointer" value="expert">Expert</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -231,6 +231,7 @@ export default function SkillsManager({ initialSkills }: Props) {
                     type="button"
                     variant="ghost"
                     size="sm"
+                    className="cursor-pointer"
                     onClick={() => setForm((f) => ({ ...f, icon: "" }))}
                   >
                     Hapus ikon
@@ -243,6 +244,7 @@ export default function SkillsManager({ initialSkills }: Props) {
                   <Input
                     type="file"
                     accept="image/*"
+                    className="cursor-pointer"
                     onChange={(event) => {
                       const file = event.target.files?.[0];
                       setIconFile(file ?? null);
@@ -256,7 +258,7 @@ export default function SkillsManager({ initialSkills }: Props) {
                   <Label htmlFor="emoji">Emoji (opsional)</Label>
                   <Input
                     id="emoji"
-                    placeholder="🚀"
+                    placeholder="emoji"
                     value={form.icon}
                     onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
                   />
@@ -289,7 +291,7 @@ export default function SkillsManager({ initialSkills }: Props) {
             <Button
               type="submit"
               disabled={loading || uploadingIcon}
-              className="w-full md:w-auto"
+              className="w-full cursor-pointer md:w-auto"
             >
               {uploadingIcon
                 ? "Mengunggah ikon..."
@@ -348,13 +350,14 @@ export default function SkillsManager({ initialSkills }: Props) {
               </div>
             </CardContent>
             <CardContent className="flex gap-3 p-0">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(skill)}>
+              <Button variant="ghost" className="cursor-pointer" size="sm" onClick={() => handleEdit(skill)}>
                 Edit
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => handleDelete(skill._id)}
+                className="cursor-pointer"
               >
                 Hapus
               </Button>

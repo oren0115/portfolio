@@ -133,7 +133,7 @@ export default function ExperienceManager({ initialExperiences }: Props) {
             </CardDescription>
           </div>
           {editingId && (
-            <Button variant="ghost" size="sm" onClick={resetForm}>
+            <Button variant="ghost" className="cursor-pointer" size="sm" onClick={resetForm}>
               Batalkan edit
             </Button>
           )}
@@ -214,7 +214,7 @@ export default function ExperienceManager({ initialExperiences }: Props) {
                 }
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full md:w-auto">
+            <Button type="submit" disabled={loading} className="w-full cursor-pointer md:w-auto">
               {loading ? "Menyimpan..." : "Simpan"}
             </Button>
             {toast && (
@@ -243,13 +243,14 @@ export default function ExperienceManager({ initialExperiences }: Props) {
               </p>
             </CardContent>
             <CardContent className="flex gap-3 pb-6 md:pb-0 md:pr-6">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(exp)}>
+              <Button variant="ghost" className="cursor-pointer" size="sm" onClick={() => handleEdit(exp)}>
                 Edit
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => handleDelete(exp._id)}
+                className="cursor-pointer"
               >
                 Hapus
               </Button>

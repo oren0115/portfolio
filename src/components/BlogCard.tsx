@@ -71,7 +71,7 @@ export function BlogCard({ post }: Props) {
           href={`/blog/${post.slug}`}
           className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
         >
-          Baca selengkapnya →
+          Baca selengkapnya
         </Link>
       </CardFooter>
     </Card>

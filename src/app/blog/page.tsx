@@ -28,13 +28,6 @@ export default async function BlogPage() {
             </div>
           )}
         </div>
-        <div className="text-sm text-slate-500">
-          Mau berbagi cerita baru?{" "}
-          <Link href="/admin/blog" className="underline">
-            buka panel admin
-          </Link>
-          .
-        </div>
       </main>
     </div>
   );

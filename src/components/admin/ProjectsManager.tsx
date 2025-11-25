@@ -179,7 +179,7 @@ export default function ProjectsManager({ initialProjects }: Props) {
             </CardDescription>
           </div>
           {editingId && (
-            <Button variant="ghost" size="sm" onClick={resetForm}>
+            <Button variant="ghost" className="cursor-pointer" size="sm" onClick={resetForm}>
               Batalkan edit
             </Button>
           )}
@@ -265,6 +265,7 @@ export default function ProjectsManager({ initialProjects }: Props) {
                 {form.image && !imageFile && (
                   <Button
                     type="button"
+                    className="cursor-pointer"
                     variant="ghost"
                     size="sm"
                     onClick={() =>
@@ -311,7 +312,8 @@ export default function ProjectsManager({ initialProjects }: Props) {
 
             <Button
               type="submit"
-              className="w-full md:w-auto"
+
+              className="w-full cursor-pointer md:w-auto"
               disabled={loading || uploadingImage}
             >
               {uploadingImage
@@ -343,13 +345,14 @@ export default function ProjectsManager({ initialProjects }: Props) {
               </p>
             </CardContent>
             <CardContent className="flex gap-2 p-4 pb-4 sm:gap-3 sm:pb-6 md:pb-0 md:pr-6">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(project)}>
+              <Button variant="ghost" className="cursor-pointer" size="sm" onClick={() => handleEdit(project)}>
                 Edit
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => handleDelete(project._id)}
+                className="cursor-pointer"
               >
                 Hapus
               </Button>

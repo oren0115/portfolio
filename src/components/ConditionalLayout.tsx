@@ -12,10 +12,10 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       {!isAdminPage && (
-        <header className="border-b border-slate-200 bg-white/85 shadow-sm backdrop-blur">
+        <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/85 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/75">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
             <Link href="/" className="text-base font-semibold text-slate-900 sm:text-lg">
-              Portfolio
+              Nyoman
             </Link>
             <HeaderNav />
           </div>

@@ -9,7 +9,7 @@ export default function LogoutButton() {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleLogout}>
+    <Button className="cursor-pointer hover:bg-slate-100" variant="outline" size="sm" onClick={handleLogout}>
       Logout
     </Button>
   );

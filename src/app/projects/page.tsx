@@ -18,7 +18,7 @@ export default async function ProjectsPage() {
           subtitle="Semua project yang dipublikasikan."
         />
         {projects.length ? (
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-3 sm:grid-cols-2">
             {projects.map((project) => (
               <ProjectCard key={project._id} project={project} />
             ))}

@@ -278,6 +278,7 @@ export default function BlogManager({ initialBlogs }: Props) {
                     type="button"
                     variant={contentView === "edit" ? "default" : "outline"}
                     size="sm"
+                    className="cursor-pointer"
                     onClick={() => setContentView("edit")}
                   >
                     Edit
@@ -286,6 +287,7 @@ export default function BlogManager({ initialBlogs }: Props) {
                     type="button"
                     variant={contentView === "preview" ? "default" : "outline"}
                     size="sm"
+                    className="cursor-pointer"
                     onClick={() => setContentView("preview")}
                   >
                     Preview
@@ -303,30 +305,30 @@ export default function BlogManager({ initialBlogs }: Props) {
                         else if (value === "p") insertLine("");
                       }}
                     >
-                      <SelectTrigger className="h-8 w-[100px] gap-1 sm:w-[120px]">
+                      <SelectTrigger className="h-8 w-[100px] gap-1 sm:w-[120px] cursor-pointer">
                         <Type className="h-4 w-4" />
-                        <SelectValue placeholder="Paragraph" />
+                        <SelectValue className="cursor-pointer" placeholder="Paragraph" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="h1">
+                        <SelectItem className="cursor-pointer" value="h1">
                           <div className="flex items-center gap-2">
                             <Heading1 className="h-4 w-4" />
                             Heading 1
                           </div>
                         </SelectItem>
-                        <SelectItem value="h2">
+                        <SelectItem className="cursor-pointer" value="h2">
                           <div className="flex items-center gap-2">
                             <Heading2 className="h-4 w-4" />
                             Heading 2
                           </div>
                         </SelectItem>
-                        <SelectItem value="h3">
+                        <SelectItem className="cursor-pointer" value="h3">
                           <div className="flex items-center gap-2">
                             <Heading3 className="h-4 w-4" />
                             Heading 3
                           </div>
                         </SelectItem>
-                        <SelectItem value="p">Paragraph</SelectItem>
+                        <SelectItem className="cursor-pointer" value="p">Paragraph</SelectItem>
                       </SelectContent>
                     </Select>
                     <div className="h-4 w-px bg-slate-300" />
@@ -334,7 +336,7 @@ export default function BlogManager({ initialBlogs }: Props) {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8"
+                      className="h-8 cursor-pointer"
                       onClick={() => insertTextAtCursor("**", "**")}
                       title="Bold"
                     >
@@ -345,7 +347,7 @@ export default function BlogManager({ initialBlogs }: Props) {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8"
+                      className="h-8 cursor-pointer"
                       onClick={() => insertLine("- ")}
                       title="Bullet List"
                     >
@@ -355,33 +357,13 @@ export default function BlogManager({ initialBlogs }: Props) {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8"
+                      className="h-8 cursor-pointer"
                       onClick={() => insertLine("1. ")}
                       title="Numbered List"
                     >
                       <ListOrdered className="h-4 w-4" />
                     </Button>
                     <div className="h-4 w-px bg-slate-300" />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => insertTextAtCursor("[", "]()")}
-                      title="Link"
-                    >
-                      <LinkIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => insertTextAtCursor("![", "]()")}
-                      title="Image"
-                    >
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
                   </div>
                   <Textarea
                     ref={contentTextareaRef}
@@ -482,7 +464,7 @@ export default function BlogManager({ initialBlogs }: Props) {
             <Button
               type="submit"
               disabled={loading || uploadingCover}
-              className="w-full md:w-auto"
+              className="w-full cursor-pointer md:w-auto"
             >
               {uploadingCover
                 ? "Mengunggah cover..."
@@ -510,13 +492,14 @@ export default function BlogManager({ initialBlogs }: Props) {
               <p className="text-xs text-slate-500 sm:text-sm">{blog.slug}</p>
             </CardContent>
             <CardContent className="flex gap-2 p-4 pb-4 sm:gap-3 sm:pb-6 md:pb-0 md:pr-6">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(blog)}>
+              <Button variant="ghost" className="cursor-pointer" size="sm" onClick={() => handleEdit(blog)}>
                 Edit
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => handleDelete(blog.slug)}
+                className="cursor-pointer"
               >
                 Hapus
               </Button>

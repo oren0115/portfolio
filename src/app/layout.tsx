@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js Portfolio CMS",
+  title: "Nyoman",
   description:
     "Portfolio fullstack dengan CRUD Projects, Blog, Skills, Experience menggunakan Next.js + MongoDB.",
 };
